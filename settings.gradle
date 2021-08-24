@@ -8,3 +8,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "RFiD Lib"
 include ':app'
+include ':techno_rfid'
