@@ -37,22 +37,24 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
     private List<NurDeviceSpec> mDeviceList;
     private Handler mHandler;
     private Runnable mEthQueryRunnable;
-    private  boolean mEthQueryRunning = false;
+    private boolean mEthQueryRunning = false;
     private boolean mScanning = false;
     private Context mOwner = null;
     private NurDeviceScannerListener mListener = null;
 
-    public interface NurDeviceScannerListener{
+    public interface NurDeviceScannerListener {
         void onScanStarted();
+
         void onDeviceFound(NurDeviceSpec device);
+
         void onScanFinished();
     }
 
-    public NurDeviceScanner(Context context, int requestedDevices, NurApi mApi){
-        this(context,requestedDevices,null, mApi);
+    public NurDeviceScanner(Context context, int requestedDevices, NurApi mApi) {
+        this(context, requestedDevices, null, mApi);
     }
 
-    public NurDeviceScanner(Context context, int requestedDevices, NurDeviceScannerListener listener, NurApi api){
+    public NurDeviceScanner(Context context, int requestedDevices, NurDeviceScannerListener listener, NurApi api) {
         mDeviceList = new ArrayList<NurDeviceSpec>();
         mOwner = context;
         mRequestedDevices = requestedDevices;
@@ -61,17 +63,17 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
         mApi = api;
     }
 
-    public void registerScanListener(NurDeviceScannerListener listener){
+    public void registerScanListener(NurDeviceScannerListener listener) {
         mListener = listener;
     }
 
-    public void unregisterListener(){
+    public void unregisterListener() {
         mListener = null;
     }
 
-    public boolean scanDevices(Long timeout, boolean checkFilter){
+    public boolean scanDevices(Long timeout, boolean checkFilter) {
 
-        if(mListener == null)
+        if (mListener == null)
             return false;
 
         mCheckNordicID = checkFilter;
@@ -89,23 +91,23 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
         mListener.onScanStarted();
 
         if (requestingIntDevice()) {
-            Log.i(TAG,"Add internal reader device");
+            Log.i(TAG, "Add internal reader device");
             addDevice(getIntDeviceSpec());
         }
 
         if (requestingUSBDevice()) {
-            Log.i(TAG,"Scanning USB Devices");
+            Log.i(TAG, "Scanning USB Devices");
             addDevice(getUsbDeviceSpec());
         }
 
         if (requestingETHDevice()) {
-            Log.i(TAG,"Scanning Local Ethernet Devices");
+            Log.i(TAG, "Scanning Local Ethernet Devices");
             queryMdnsDevices();
             queryEthernetDevices();
         }
 
         if (requestingBLEDevices()) {
-            Log.i(TAG,"Scanning BLE Devices");
+            Log.i(TAG, "Scanning BLE Devices");
             queryBLEDevices();
         }
 
@@ -121,7 +123,7 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
     }
 
     public void scanDevices() {
-        if(mScanning == false)
+        if (mScanning == false)
             scanDevices(mScanPeriod, mCheckNordicID);
     }
 
@@ -138,7 +140,7 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
         }
     }
 
-    public void purge(){
+    public void purge() {
         mDeviceList.clear();
     }
 
@@ -164,7 +166,7 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
 
     private boolean requestingIntDevice() {
         String manufacturer = Build.MANUFACTURER.toLowerCase(Locale.ENGLISH);
-        Log.i(TAG,"Manuf Lower = " + manufacturer + " Orig = " + Build.MANUFACTURER);
+        Log.i(TAG, "Manuf Lower = " + manufacturer + " Orig = " + Build.MANUFACTURER);
         return (manufacturer.contains("nordicid") || manufacturer.contains("nordic id"));
     }
 
@@ -184,12 +186,14 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
             Log.i(TAG, "New device found : " + device.getSpec());
             mDeviceList.add(device);
 
-            if(mListener != null)
+            if (mListener != null)
                 mListener.onDeviceFound(device);
         }
     }
 
-    public List<NurDeviceSpec> getDeviceList(){ return mDeviceList; }
+    public List<NurDeviceSpec> getDeviceList() {
+        return mDeviceList;
+    }
 
     public NurDeviceSpec getIntDeviceSpec() {
         return new NurDeviceSpec("type=INT;addr=integrated_reader;name=Integrated Reader");
@@ -197,11 +201,11 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
 
     //region Ethernet devices
 
-    public boolean isEthQueryRunning(){
+    public boolean isEthQueryRunning() {
         return mEthQueryRunning;
     }
 
-    public void queryEthernetDevices(){
+    public void queryEthernetDevices() {
         mEthQueryRunnable = new Runnable() {
             @Override
             public void run() {
@@ -212,8 +216,7 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
         (new Thread(mEthQueryRunnable)).start();
     }
 
-    private void ethQueryWorker()
-    {
+    private void ethQueryWorker() {
         ArrayList<NurEthConfig> theDevices = null;
         try {
             while (mScanning) {
@@ -225,10 +228,8 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            // 
+        } catch (Exception ex) {
+            Log.e(TAG, ex.getMessage());
         }
         mEthQueryRunning = false;
     }
@@ -236,8 +237,7 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
     final String SERVICE_TYPE = "_nur._tcp.";
     NsdManager mNsdManager = null;
 
-    public void queryMdnsDevices()
-    {
+    public void queryMdnsDevices() {
         try {
             if (mNsdManager == null)
                 mNsdManager = (NsdManager) mOwner.getSystemService(Context.NSD_SERVICE);
@@ -264,9 +264,7 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
                 // Service type is the string containing the protocol and
                 // transport layer for this service.
                 Log.d(TAG, "MDNS Unknown Service Type: " + service.getServiceType());
-            }
-            else
-            {
+            } else {
                 if (mNsdManager == null) return;
                 mNsdManager.resolveService(service, getResolveListener());
             }
@@ -337,8 +335,7 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
         };
     }
 
-    private void postNewDevice(final NurDeviceSpec device)
-    {
+    private void postNewDevice(final NurDeviceSpec device) {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -349,9 +346,9 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
 
     private NurDeviceSpec getEthDeviceSpec(NurEthConfig ethCfg) {
         String tr = "LAN";
-        if (ethCfg.transport==2)
+        if (ethCfg.transport == 2)
             tr = "WLAN";
-        return new NurDeviceSpec("type=TCP;addr="+ethCfg.ip+":"+ethCfg.serverPort+";port="+ethCfg.serverPort+";name="+ethCfg.title+";transport="+tr);
+        return new NurDeviceSpec("type=TCP;addr=" + ethCfg.ip + ":" + ethCfg.serverPort + ";port=" + ethCfg.serverPort + ";name=" + ethCfg.title + ";transport=" + tr);
     }
 
     //endregion
@@ -366,11 +363,9 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
     //region BLE Devices
 
     @Override
-    public void onBleDeviceFound(final BluetoothDevice device, final String name, final int rssi)
-    {
-        if (checkNIDBLEFilter(name))
-        {
-            if( mApi != null && mApi.getUiThreadRunner() != null) {
+    public void onBleDeviceFound(final BluetoothDevice device, final String name, final int rssi) {
+        if (checkNIDBLEFilter(name)) {
+            if (mApi != null && mApi.getUiThreadRunner() != null) {
                 mApi.getUiThreadRunner().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -387,8 +382,7 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
         return new NurDeviceSpec("type=SmartPair;addr=smartpair;name=Nordic ID Smart Pair");
     }
 
-    public void queryBLEDevices()
-    {
+    public void queryBLEDevices() {
         if (NurSmartPairSupport.isSupported()) {
             // Add smart pair
             addDevice(getSmartPairBleDeviceSpec());
@@ -408,8 +402,7 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
         BleScanner.getInstance().registerScanListener(this);
     }
 
-    private boolean checkNIDBLEFilter(String deviceName)
-    {
+    private boolean checkNIDBLEFilter(String deviceName) {
         if (!mCheckNordicID)
             return true;
         if (deviceName == null)
@@ -424,7 +417,7 @@ public class NurDeviceScanner implements BleScanner.BleScannerListener {
             name = device.getAddress().toString();
         }
 
-        return new NurDeviceSpec("type=BLE;addr="+device.getAddress()+";name="+name+";bonded="+bonded+";rssi="+rssi);
+        return new NurDeviceSpec("type=BLE;addr=" + device.getAddress() + ";name=" + name + ";bonded=" + bonded + ";rssi=" + rssi);
     }
 
     //endregion

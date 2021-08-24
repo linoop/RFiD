@@ -3,7 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/linoo/Desktop/Technowave/RFiDLib/app/src/main/res/layout/activity_main.xml" value="0.25" />
         <entry key="..\:/Users/linoo/Desktop/Technowave/RFiDLib/techno_rfid/src/main/res/layout/device_element.xml" value="0.12771739130434784" />
+        <entry key="..\:/Users/linoo/Desktop/Technowave/RFiDLib/techno_rfid/src/main/res/layout/device_list.xml" value="0.18659420289855072" />
       </map>
     </option>
   </component>
